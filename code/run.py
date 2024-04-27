@@ -1,78 +1,135 @@
-import tkinter as tk
-from tkinter import filedialog as fd
+import sys
+from PyQt5.QtWidgets import QApplication, QFileDialog, QVBoxLayout, QPushButton, QCheckBox, QLabel, QWidget, QLineEdit
 from functions import (
-    deep_folders,
-    rename_and_relocation,
-    rename_and_relocation_without_arch,
-    del_empty_dirs,
-    result_sorting_with_arch,
-    result_sorting_without_arch,
+    deep_folders, rename_and_relocation, rename_and_relocation_without_arch,
+    del_empty_dirs, result_sorting_with_arch, result_sorting_without_arch,
 )
 
-root = tk.Tk()
-root.title('Сортувалка')
-root.geometry('+350+300')
+class App(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.title = 'Папка для сортування:'
+        self.initUI()
 
+    def initUI(self):
 
-def main() -> None:
-    try:
-        adress = str(way_for_sort.get())
-        if unpack_var.get() == 1 and deep_var.get() == 1:
-            deep_folders(adress)
-            rename_and_relocation(adress)
-            result_sorting_with_arch(adress)
-        if unpack_var.get() == 1 and deep_var.get() != 1:
-            rename_and_relocation(adress)
-            result_sorting_with_arch(adress)
-        if unpack_var.get() != 1 and deep_var.get() == 1:
-            deep_folders(adress)
-            rename_and_relocation_without_arch(adress)
-            result_sorting_without_arch(adress)
-        if unpack_var.get() != 1 and deep_var.get() != 1:
-            rename_and_relocation_without_arch(adress)
-            del_empty_dirs(adress)
-            result_sorting_without_arch(adress)
-    except:
-        err_win = tk.Tk()
-        tk.Label(err_win, text='Спочатку вкажіть шлях до папки!').grid(pady=5, padx=5)
-        err_win.geometry('+550+350')
+        
+        self.setWindowTitle(self.title)
+        self.setGeometry(100, 100, 500, 300)  # Set the size of the window
+        self.setStyleSheet(
+        """
+                QWidget {
+                background-color: #333333;
+                color: #FFFFFF;
+                font-size: 12px;
+                font-weight: 500;
+            }
 
-        def exit_err() -> None:
-            err_win.destroy()
+            QPushButton {
+                border: 1px solid #AAAAAA;
+                padding: 5px;
+                border-radius: 10px;
+                color: #FFFFFF;
+            }
 
-        tk.Button(err_win, text='Ok', command=exit_err).grid(pady=5, padx=5)
+            QPushButton:hover {
+                color: #ff4b4b;
+                border: 1px solid #ff4b4b;
+            }
 
+            QPushButton:pressed {
+                border: 1px solid #ff4b4b;
+                background-color: #ff4b4b;
+            }
+            
+            QLineEdit {
+                background-color: #555555;
+                border: 1px solid #555555;
+                padding: 5px;
+                border-radius: 10px;
+                color: rgb(255, 255, 194);
+            }
 
-tk.Label(root, text='Папка для сортування:').grid(row=0, column=0, pady=5, padx=5)
-tk.Label(
-    root,
-    text='ПОПЕРЕДЖЕННЯ! Назви файлів з кириличними символами будуть транслітеровані!',
-    font=('Times new roman', 10, 'italic'),
-).grid(row=4, column=1, columnspan=2, pady=5, padx=5, sticky='e')
+            QCheckBox {
+                spacing: 5px;
+            }
 
-unpack_var = tk.IntVar()
-unpack = tk.Checkbutton(root, text='Розпаковка архівів', variable=unpack_var)
-unpack.grid(row=3, column=0, columnspan=2, sticky='w')
+            QCheckBox::indicator{
+                border: 1px solid #555555;
+            }
 
-deep_var = tk.IntVar()
-deppest = tk.Checkbutton(root, text='Сортувати у вкладених папках', variable=deep_var)
-deppest.grid(row=4, column=0, columnspan=2, sticky='w')
+            QCheckBox::indicator:unchecked {
+                background-color: #333333;
+            }
 
-way_for_sort = tk.Entry(root, width=100)
-way_for_sort.grid(row=0, column=1)
+            QCheckBox::indicator:checked {
+                background-color: #a3a3a3; 
+            }
 
+            QLabel {
+                background-color:rgba(255, 227, 18, 0.2);
+                border-radius: 5px;
+                padding: 5px;
+                color: #FFFFFF;
+            }
 
-def callback() -> str:
-    name = fd.askdirectory()
-    way_for_sort.insert(0, name)
-    return str(name)
+            """)
 
+        layout = QVBoxLayout()
 
-tk.Button(text='Знайти папку', command=callback).grid(row=1, column=1)
+        self.address = QLineEdit(self)
+        self.address.setFixedHeight(40)  # Increase the height of the QLineEdit
+        layout.addWidget(self.address)
 
-tk.Button(root, text='Сортувати!', command=main).grid(
-    row=1, column=1, pady=5, padx=5, sticky='e'
-)
+        self.select_folder = QPushButton('Вибрати папку', self)
+        self.select_folder.setFixedHeight(40)  # Increase the height of the QPushButton
+        self.select_folder.clicked.connect(self.on_select_folder_click)
+        layout.addWidget(self.select_folder)
 
-if __name__ == '__main__':
-    root.mainloop()
+        self.unpack_var = QCheckBox('Розпаковка архівів', self)
+        self.unpack_var.setFixedHeight(40)  # Increase the height of the QCheckBox
+        layout.addWidget(self.unpack_var)
+
+        self.deep_var = QCheckBox('Сортувати у вкладених папках', self)
+        self.deep_var.setFixedHeight(40)  # Increase the height of the QCheckBox
+        layout.addWidget(self.deep_var)
+
+        self.sort_button = QPushButton('Сортувати!', self)
+        self.sort_button.setFixedHeight(40)  # Increase the height of the QPushButton
+        self.sort_button.clicked.connect(self.on_sort_click)
+        layout.addWidget(self.sort_button)
+
+        self.warning = QLabel("ПОПЕРЕДЖЕННЯ! Назви файлів з кириличними символами будуть транслітеровані!")
+        self.warning.setFixedHeight(60)  # Increase the height of the QLabel
+        layout.addWidget(self.warning)
+
+        self.setLayout(layout)
+
+    def on_select_folder_click(self):
+        folder_selected = QFileDialog.getExistingDirectory(self, "Select Folder")
+        self.address.setText(folder_selected)
+
+    def on_sort_click(self):
+        try:
+            if self.unpack_var.isChecked() and self.deep_var.isChecked():
+                deep_folders(self.address.text())
+                rename_and_relocation(self.address.text())
+                result_sorting_with_arch(self.address.text())
+            elif self.unpack_var.isChecked() and not self.deep_var.isChecked():
+                rename_and_relocation(self.address.text())
+                result_sorting_with_arch(self.address.text())
+            elif not self.unpack_var.isChecked() and self.deep_var.isChecked():
+                deep_folders(self.address.text())
+                rename_and_relocation_without_arch(self.address.text())
+                result_sorting_without_arch(self.address.text())
+            else:
+                rename_and_relocation_without_arch(self.address.text())
+                del_empty_dirs(self.address.text())
+                result_sorting_without_arch(self.address.text())
+        except Exception as e:
+            self.warning.setText(f"Помилка: {str(e)}")
+
+app = QApplication(sys.argv)
+ex = App()
+ex.show()
+sys.exit(app.exec_())
