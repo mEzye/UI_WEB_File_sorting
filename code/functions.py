@@ -7,16 +7,18 @@ all_resume = ""
 
 
 def find_images(adress: str) -> list:
-    files = os.listdir(adress)
+    files = os.listdir(adress) # all dir
     type_img = list(
-        filter(
+        filter( 
+            # The filter creates a list that uses any()..
+            #..or matches at least some file type and change list named 'files'
             lambda x: any(filter(lambda y: x.lower().endswith(y.lower()), CON.IMAGES)),
             files,
         )
     )
     return type_img
 
-
+# same for other types
 def find_video(adress: str) -> list:
     files = os.listdir(adress)
     type_video = list(
@@ -76,7 +78,7 @@ def dont_know_files(adress: str) -> list:
             type_any.append(file)
     return type_any
 
-
+# delete the empty folders with recursion, MUST BE CHANGE
 def del_empty_dirs(adress: str) -> None:
     for dirs in os.listdir(adress):
         dir = os.path.join(adress, dirs)
